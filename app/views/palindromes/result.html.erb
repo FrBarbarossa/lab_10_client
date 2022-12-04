@@ -1,0 +1,16 @@
+
+<table class="table">
+    <tr>
+        <th>Порядкорвый номер</th>
+        <th>Число (палиндром)</th>
+        <th>Квадрат числа (палиндром)</th>
+    </tr>
+    <%@result.each_with_index do |cort, index|%>
+    <tr>
+        <td><%= index+1%></td>
+        <td><%= cort[0]%></td>
+        <td><%= cort[1]%></td>
+    </tr>
+    <%end%>
+</table>
+
