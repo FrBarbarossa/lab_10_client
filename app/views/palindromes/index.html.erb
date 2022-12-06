@@ -1,4 +1,4 @@
-<%= form_with url: "palindromes/result", data: { behavior: "autosave" }, method: :get do |form| %>
+<%= form_with url: "palindromes/result", data: {turbo: false, behavior: "autosave" }, method: :get do |form| %>
     <%= number_field_tag :number, class: 'form-control', id: 'number' %> <br/>
 
     <%= form.radio_button :frmt, "html" %>

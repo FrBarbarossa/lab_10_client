@@ -4,11 +4,11 @@ require 'open-uri'
 class PalindromesController < ApplicationController
   before_action :check_num, only: :result
 
-
   def index
   end
 
   def result
+    p request.headers
     @number = params[:number].to_i
 
     redirect_to '/' unless flash.empty?
@@ -22,11 +22,13 @@ class PalindromesController < ApplicationController
       @result = xslt_trans(server_response).to_html
     elsif @side == 'xml'
       @result = Nokogiri::XML(server_response)
-      # render :xml => @result
+      render :xml => @result
     elsif @side == 'xslt'
-      # @result = insert_xslt_line(server_response)
+      @result = insert_xslt_line(server_response)
       p "!"
-      render xml: insert_xslt_line(server_response)
+      render :xml => @result
+      # render :html => "<h1>PSHL NAH</h1>"
+      # render insert_xslt_line(server_response), formats: :xml
     end
   end
 
