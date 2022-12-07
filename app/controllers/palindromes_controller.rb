@@ -3,6 +3,7 @@ require 'open-uri'
 
 class PalindromesController < ApplicationController
   before_action :check_num, only: :result
+  before_action :check_radio, only: :result
 
   def index
   end
@@ -61,6 +62,14 @@ class PalindromesController < ApplicationController
     end
     if number.to_i <= 0  then
       flash[:notice] = "Вы ввели: '#{number}' Введите число, больше 0."
+    end
+  end
+
+  def check_radio
+    rad = params[:frmt]
+    if rad.nil?
+      flash[:notice] = "Выберите формат!"
+      return
     end
   end
 
