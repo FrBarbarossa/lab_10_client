@@ -1,19 +1,57 @@
+require 'nokogiri'
+require 'open-uri'
+
 class PalindromesController < ApplicationController
   before_action :check_num, only: :result
-
+  before_action :check_radio, only: :result
 
   def index
-    @result = (1..params[:number].to_i).each.select{|num| if palindrome?(num.to_s) and palindrome?((num**2).to_s) then num end}.map{|i| [i, i**2]}
   end
 
   def result
+    p request.headers
+    @number = params[:number].to_i
+
     redirect_to '/' unless flash.empty?
-    p flash[:notice]
     return unless flash.empty?
-    @result = count_result(params[:number].to_i)
+    
+    @side = params[:frmt]
+    p @side
+    my_url = URL + "?number=#{@number}"
+    server_response = URI.open(my_url)
+    if @side == 'html'
+      @result = xslt_trans(server_response).to_html
+    elsif @side == 'xml'
+      @result = Nokogiri::XML(server_response)
+      render :xml => @result
+    elsif @side == 'xslt'
+      @result = insert_xslt_line(server_response)
+      p "!"
+      render :xml => @result
+      # render :html => "<h1>PSHL NAH</h1>"
+      # render insert_xslt_line(server_response), formats: :xml
+    end
   end
 
-  private 
+
+  private
+  URL = 'http://localhost:3000/palindromes/result.xml'.freeze
+  SERV_TRANS = "#{Rails.root}/public/transform.xslt".freeze
+  BROWS_TRANS = '/transform.xslt'.freeze
+
+  def xslt_trans(data, transform: SERV_TRANS)
+    doc = Nokogiri::XML(data)
+    xslt = Nokogiri::XSLT(File.read(transform))
+    xslt.transform(doc)
+  end
+
+  def insert_xslt_line(data, transform: BROWS_TRANS)
+    doc = Nokogiri::XML(data)
+    xslt = Nokogiri::XML::ProcessingInstruction.new(
+    doc,'xml-stylesheet', 'type="text/xsl" href="' + transform + '"')
+    doc.root.add_previous_sibling(xslt)
+    doc
+  end
 
   def check_num
     number = params[:number]
@@ -27,11 +65,12 @@ class PalindromesController < ApplicationController
     end
   end
 
-  def palindrome?(str)
-    str == str.reverse
+  def check_radio
+    rad = params[:frmt]
+    if rad.nil?
+      flash[:notice] = "Выберите формат!"
+      return
+    end
   end
 
-  def count_result(number)
-    (1..number).each.select { |num| if palindrome?(num.to_s) && palindrome?((num**2).to_s) then num end }.map { |i| [i, i**2] }
-  end
 end
